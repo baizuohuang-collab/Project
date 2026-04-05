@@ -1,9 +1,92 @@
 #include <iostream>
+#include <string>
+#include <vector>
 using namespace std;
-class Date 
-{
 
-}
+//event is for users to write down the events
+class Event 
+{ 
+    public: 
+        string date; 
+        string time; 
+        string category; 
+        string description;
+    private:
+        Event();
+        ~Event();
+        Event(const Event& other);
+};
+
+//diary is for users to write down some emotions 
+class Diary 
+{ 
+    public: 
+        string date;
+        string content;
+    private:
+        Diary();
+        ~Diary();
+        Diary(const Diary& other);
+};
+
+//Manager 類別 負責： 新增資料 刪除資料 搜尋資料 統計資料
+/*class Manager
+{
+    public:
+
+    private:
+        Manager();
+        ~Manager();
+        Manager(const Manager& other);
+};
+*/
+
+template <typename T>
+class Manager {
+private:
+    vector<T> data;   // 用來存資料
+
+public:
+    // 新增資料
+    void add(const T& item) 
+    {
+        data.push_back(item);
+    }
+
+    // 刪除資料（刪除第一個符合的）
+    bool remove(const T& item) 
+    {
+        auto it = find(data.begin(), data.end(), item);
+        if (it != data.end()) 
+        {
+            data.erase(it);
+            return true;
+        }
+        return false;
+    }
+
+    // 搜尋資料（回傳是否存在）
+    bool search(const T& item) const 
+    {
+        return find(data.begin(), data.end(), item) != data.end();
+    }
+
+    // 統計資料（回傳資料筆數）
+    size_t count() const 
+    {
+        return data.size();
+    }
+
+    // 顯示所有資料（方便測試）
+    void printAll() const 
+    {
+        for (const auto& item : data) 
+        {
+            cout << item << "\n";
+        }
+    }
+};
+
 
 int main ()
 {
