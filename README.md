@@ -11,79 +11,54 @@
 
 基本功能
 1.每日事件記錄
-  使用者可以新增每日發生的事件,並附上時間，提醒自己下次可以怎改進
-  例如：
-    睡過頭
-    錯過公車
-    忘記帶東西
-    提早完成作業
+    使用者可以新增每日發生的事件,並附上時間，提醒自己下次可以怎改進
+    例如： 睡過頭,錯過公車,忘記帶東西,提早完成作業
 2.記事本功能
-  類似日記功能
-  可輸入文字紀錄每日心得
+    類似日記功能,可輸入文字紀錄每日心得
 3.時間標記功能
-  自動記錄日期與時間
-  方便日後查詢
-  進階功能
+    自動記錄日期與時間,方便日後查詢
+進階功能
 4.事件分類功能
-  使用者可分類事件
-  例如：
-    遲到
-    學習
-    健康
-    生活
+    使用者可分類事件
+    例如：遲到,學習,健康,生活
 5.統計分析功能
-  統計某種事件發生次數
-  例如：
-    一週遲到幾次
-    一個月早起幾天
+    統計某種事件發生次數
+    例如：一週遲到幾次,一個月早起幾天
 6.提醒功能
-  每晚提醒使用者紀錄
-  例如：
-    "今天發生什麼事情呢？"
+    每晚提醒使用者紀錄
+    例如："今天發生什麼事情呢？"
 7.搜尋功能
-  可搜尋過去記錄
-  例如：
-    搜尋「遲到」
+    可搜尋過去記錄
+    例如：搜尋「遲到」
 ### 使用技術
 <!-- 使用的語言、框架、工具等 -->
 程式語言
   C++
 使用技術
   檔案儲存 (File I/O)
-  使用：
-  fstream
-  ifstream
-  ofstream
-  來儲存資料
-  例如：
-    events.txt
+    使用：fstream,ifstream,ofstream
+    來儲存資料
   資料結構
-  使用：
-  vector
-  struct / class
-  map (可選)
-  物件導向設計
-  
-  建立以下類別：
-
-Event 類別
-class Event
-{
-public:
-    string date;
-    string time;
-    string category;
-    string description;
-};
-Diary 類別
-class Diary
-{
-public:
-    string date;
-    string content;
-};
-Manager 類別
-
+    使用：vector,struct / class,map 
+    物件導向設計
+  建立以下類別(temporary)：
+  Event 類別
+  class Event
+  {
+    public:
+      string date;
+      string time;
+      string category;
+      string description;
+  };
+  Diary 類別
+  class Diary
+  {
+    public:
+      string date;
+      string content;
+  };
+  Manager 類別
   負責：
     新增資料
     刪除資料
@@ -92,70 +67,52 @@ Manager 類別
 ### 時程規劃
 <!-- 各週預計完成的進度 -->
 第1週
-專題規劃
-設計資料結構
+  專題規劃
+  設計資料結構
 第2週
-建立 Event class
-建立 Diary class
+  建立 Event class
+  建立 Diary class
 第3週
-實作新增功能
-實作儲存功能
+  實作新增功能
+  實作儲存功能
 第4週
-實作讀取功能
-實作顯示功能
+  實作讀取功能
+  實作顯示功能
 第5週
-實作搜尋功能
+  實作搜尋功能
 第6週
-實作統計功能
+  實作統計功能
 第7週
-改善 UI（console UI）
-修正錯誤
+  改善 UI（console UI）
+  修正錯誤
 第8週
-撰寫報告
-準備簡報
+  撰寫報告
+  準備簡報
 ### 與課程的關聯
 <!-- 你的專題可能涉及哪些資料結構或演算法概念？為什麼？ -->
 本專題涉及以下資料結構與演算法：
 
 資料結構
-1. Vector
-
-儲存所有事件
-
-vector<Event> events;
-2. Struct / Class
-
-建立資料物件
-
-class Event
-3. Map (進階)
-
-統計事件出現次數
-
-map<string, int> statistics;
-4. Stack（進階）
-
-Undo 功能（可選）
-
+  1. Vector
+    儲存所有事件
+    vector<Event> events;
+  2. Struct / Class
+    建立資料物件
+    class Event
+  3. Map 
+    統計事件出現次數
+    map<string, int> statistics;
+  4. Stack
+    Undo 功能
 演算法
-1. 搜尋演算法
-Linear search
-Binary search（如果排序）
-2. 排序演算法
-
-例如：
-
-按日期排序
-按事件頻率排序
-
-可使用：
-
-sort()
-3. 統計演算法
-
-例如：
- 出現最多的事件
- 平均事件數
+  1. 搜尋演算法
+    Linear search
+    Binary search（如果排序）
+  2. 排序演算法
+    例如：按日期排序,按事件頻率排序
+      可使用：sort()
+  3. 統計演算法
+    例如：出現最多的事件,平均事件數
 ---
 
 ## Prototype Report
