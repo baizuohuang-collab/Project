@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <Q
 using namespace std;
 
 //event is for users to write down the events
@@ -92,3 +93,64 @@ int main ()
 {
     return 0;
 }
+
+void showMenu() {
+    cout << "\n===== MENU =====\n";
+    cout << "1. Add data\n";
+    cout << "2. Remove data\n";
+    cout << "3. Search data\n";
+    cout << "4. Count data\n";
+    cout << "5. Show all\n";
+    cout << "0. Exit\n";
+    cout << "Choose: ";
+}
+
+int main() {
+    int choice;
+    string input;
+
+    while (true) {
+        showMenu();
+        cin >> choice;
+
+        // 防止 cin 跳過輸入
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        switch (choice) {
+            case 1:
+                cout << "Enter data to add: ";
+                getline(cin, input);
+                // manager.add(input);
+                break;
+
+            case 2:
+                cout << "Enter data to remove: ";
+                getline(cin, input);
+                // manager.remove(input);
+                break;
+
+            case 3:
+                cout << "Enter data to search: ";
+                getline(cin, input);
+                // if (manager.search(input)) cout << "Found!\n";
+                // else cout << "Not found.\n";
+                break;
+
+            case 4:
+                // cout << "Count: " << manager.count() << endl;
+                break;
+
+            case 5:
+                // manager.printAll();
+                break;
+
+            case 0:
+                cout << "Bye!\n";
+                return 0;
+
+            default:
+                cout << "Invalid choice.\n";
+        }
+    }
+}
+
