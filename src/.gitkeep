@@ -1,7 +1,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <Q
+#include <algorithm>
+
 using namespace std;
 
 //event is for users to write down the events
