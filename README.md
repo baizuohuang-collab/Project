@@ -1,4 +1,4 @@
-# [復盤記事本/心情記事錄]
+# 復盤記事本/心情記事錄
 
 ## Proposal Report
 
@@ -44,15 +44,15 @@
   C++
   
 使用技術
-  檔案儲存 (File I/O)
+  1.檔案儲存 (File I/O)
     使用：fstream,ifstream,ofstream
     來儲存資料
     
-  資料結構
+  2.資料結構
     使用：vector,struct / class,map 
     物件導向設計
-  建立以下類別(temporary)：
-  Event 類別
+      建立以下類別(temporary)：
+  a.Event 類別
   class Event
   {
     public:
@@ -61,14 +61,14 @@
       string category;
       string description;
   };
-  Diary 類別
+  b.Diary 類別
   class Diary
   {
     public:
       string date;
       string content;
   };
-  Manager 類別
+  c.Manager 類別
   負責：
     新增資料
     刪除資料
@@ -111,25 +111,25 @@
 本專題涉及以下資料結構與演算法：
 
 資料結構
-  1. Vector
+  1.Vector
     儲存所有事件
     vector<Event> events;
-  2. Struct / Class
+  2.Struct / Class
     建立資料物件
     class Event
-  3. Map 
+  3.Map 
     統計事件出現次數
     map<string, int> statistics;
-  4. Stack
+  4.Stack
     Undo 功能
 演算法
-  1. 搜尋演算法
+  1.搜尋演算法
     Linear search
     Binary search（如果排序）
-  2. 排序演算法
+  2.排序演算法
     例如：按日期排序,按事件頻率排序
       可使用：sort()
-  3. 統計演算法
+  3.統計演算法
     例如：出現最多的事件,平均事件數
 ---
 
