@@ -132,25 +132,33 @@
 本專題涉及以下資料結構與演算法：
 
 資料結構
-    1.Vector
-    2.儲存所有事件
-    3.vector<Event> events;
-    4.Struct / Class
-    5.建立資料物件
-    6.class Event
-    7.Map
-    8.統計事件出現次數
-    9.map<string, int> statistics;
-    10.Stack
-    11.Undo 功能
+
+1.Vector
+    儲存所有事件
+    vector<Event> events;
+    Struct / Class
+
+2.建立資料物件  
+    class Event
+
+3.Map
+    統計事件出現次數
+    map<string, int> statistics;
+
+4.Stack
+    Undo 功能
+    
 演算法
-    1.搜尋演算法
+
+1.搜尋演算法
         Linear search
         Binary search（如果排序）
-    2.排序演算法
+        
+2.排序演算法
         例如：按日期排序,按事件頻率排序
         可使用：sort()
-    3.統計演算法
+        
+ 3.統計演算法
         例如：出現最多的事件,平均事件數
 
 ---
