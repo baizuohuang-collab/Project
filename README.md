@@ -54,6 +54,7 @@
   C++
   
 使用技術
+
   1.檔案儲存 (File I/O)
     使用：fstream,ifstream,ofstream
     來儲存資料
@@ -62,7 +63,9 @@
     使用：vector,struct / class,map 
     物件導向設計
       建立以下類別(temporary)：
-  a.Event 類別
+      
+  A.Event 類別
+  
   class Event
   {
     public:
@@ -72,7 +75,9 @@
       string category;
       string description;
   };
-  b.Diary 類別
+  
+  B.Diary 類別
+  
   class Diary
   {
     public:
@@ -80,7 +85,9 @@
       string date;
       string content;
   };
-  c.Manager 類別
+  
+  C.Manager 類別
+  
   負責：
 
     新增資料
