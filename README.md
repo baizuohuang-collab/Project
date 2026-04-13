@@ -37,43 +37,65 @@
     
 7.搜尋功能
     可搜尋過去記錄
-    例如：搜尋「遲到」
+    例如：搜尋「遲到
+
+與現有工具的差異比較
+
+1.gadfga
+
+2.adsfasdg
+
+3.dgargadf
+
+
 ### 使用技術
 <!-- 使用的語言、框架、工具等 -->
 程式語言
   C++
   
 使用技術
+
   檔案儲存 (File I/O)
-    使用：fstream,ifstream,ofstream
-    來儲存資料
+  使用：fstream,ifstream,ofstream
+  來儲存資料
     
   資料結構
-    使用：vector,struct / class,map 
-    物件導向設計
+
+  使用：vector,struct / class,map 
+  物件導向設計
   建立以下類別(temporary)：
-  Event 類別
+
+  A.Event 類別
+
   class Event
   {
     public:
+
       string date;
       string time;
       string category;
       string description;
   };
-  Diary 類別
+
+  B.Diary 類別
+
   class Diary
   {
     public:
+
       string date;
       string content;
   };
-  Manager 類別
+
+  C.Manager 類別
+
   負責：
+
     新增資料
     刪除資料
     搜尋資料
     統計資料
+    
 ### 時程規劃
 <!-- 各週預計完成的進度 -->
 第1週
@@ -111,25 +133,33 @@
 本專題涉及以下資料結構與演算法：
 
 資料結構
-  1. Vector
+
+  1.Vector
     儲存所有事件
     vector<Event> events;
-  2. Struct / Class
+  
+  2.Struct / Class
     建立資料物件
     class Event
-  3. Map 
+
+  3.Map 
     統計事件出現次數
     map<string, int> statistics;
-  4. Stack
+
+  4.Stack
     Undo 功能
+
 演算法
-  1. 搜尋演算法
+
+  1.搜尋演算法
     Linear search
     Binary search（如果排序）
-  2. 排序演算法
+
+  2.排序演算法
     例如：按日期排序,按事件頻率排序
-      可使用：sort()
-  3. 統計演算法
+    可使用：sort()
+
+  3.統計演算法
     例如：出現最多的事件,平均事件數
 ---
 
