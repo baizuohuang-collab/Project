@@ -46,7 +46,6 @@ Event::Event(const string date,const string time,const string category)
     }
 
 }*/
-
 Event::~Event() noexcept
 {
     try {
@@ -72,8 +71,6 @@ Event::~Event() noexcept
         cerr << "[Warning] Exception in Event destructor: "<< e.what() <<:endl;
     }
 }
-
-
 Event::Event(const Event& other)
 {
     this->category = other.category;
