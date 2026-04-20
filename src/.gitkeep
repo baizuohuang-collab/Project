@@ -13,7 +13,7 @@ using namespace std;
 class Event 
 { 
     public: 
-        static int counter = 0;// to know how many events have created and also to record their ID 
+        static int counter;// to know how many events have created and also to record their ID 
         static vector<bool> activeIDs;//to record who is active 
         string ID;
         string date; 
@@ -80,6 +80,10 @@ Event::Event(const Event& other)
     this->activeIDs.push_back(true);
 }
 
+// Initialize static members
+int Event::counter = 0;
+vector<bool> Event::activeIDs;
+
 //diary is for users to write down some emotions 
 class Diary 
 { 
@@ -134,7 +138,7 @@ int main() {
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
         switch (choice) {
-            case 1:
+            case 1
                 cout << "Enter data to add: ";
                 getline(cin, input);
                 // manager.add(input);
@@ -169,5 +173,6 @@ int main() {
                 cout << "Invalid choice.\n";
         }
     }
+    return 0;
 }
 
