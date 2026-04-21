@@ -68,7 +68,7 @@ Event::~Event() noexcept
     }
     catch (const exception& e) 
     {
-        cerr << "[Warning] Exception in Event destructor: "<< e.what() <<:endl;
+        cerr << "[Warning] Exception in Event destructor: "<< e.what() <<endl;
     }
 }
 Event::Event(const Event& other)
@@ -138,7 +138,7 @@ int main() {
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
         switch (choice) {
-            case 1
+            case 1:
                 cout << "Enter data to add: ";
                 getline(cin, input);
                 // manager.add(input);
