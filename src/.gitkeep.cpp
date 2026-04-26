@@ -46,7 +46,7 @@ Event::Event(const string date,const string time,const string category)
     }
 
 }*/
-Event::~Event() noexcept
+Event::~Event()
 {
     try {
         for (int i = 0; i < this->counter; ++i)
@@ -124,8 +124,8 @@ void showMenu() {
 {
     cout<<"good";
     return 0;
-}*/
-
+}
+*/
 
 int main() {
     int choice;
