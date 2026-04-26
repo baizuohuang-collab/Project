@@ -130,7 +130,7 @@ void showMenu() {
 int main() {
     int choice;
     string input;
-
+    cout << "god bless me ";
     while (true) {
         showMenu();
         cin >> choice;
