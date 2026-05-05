@@ -5,6 +5,8 @@
 #include <fstream>
 #include <sstream>
 #include <limits>
+#include <chrono>
+#include <map>
 
 using namespace std;
 
@@ -151,6 +153,167 @@ public:
                  << e.description << endl;
         }
     }
+
+    map<int, Event> buildMap() {
+    vector<Event> events = readAll();
+    map<int, Event> eventMap;
+
+    for (const auto& e : events) {
+        eventMap[e.ID] = e;
+    }
+
+    return eventMap;
+    }
+    void mapSearchByID(int id) {
+    map<int, Event> eventMap = buildMap();
+
+    int steps = 0;
+
+    auto it = eventMap.find(id);
+    steps++; // one lookup (tree traversal internally)
+
+    if (it != eventMap.end()) {
+        const Event& e = it->second;
+        cout << "Found: [" << e.ID << "] "
+             << e.date << " "
+             << e.time << " "
+             << e.category << " -> "
+             << e.description << endl;
+    } else {
+        cout << "Not found.\n";
+    }
+
+    cout << "Map Search (log n) Steps (conceptual): " << steps << endl;
+    }
+
+    void printMapOrdered() {
+    map<int, Event> eventMap = buildMap();
+
+    cout << "Map is ALWAYS sorted by key (ID):\n";
+
+    for (const auto& pair : eventMap) {
+        const Event& e = pair.second;
+        cout << "[" << e.ID << "] "
+             << e.description << endl;
+    }
+    }
+
+    void linearSearch(const string& keyword) {
+        auto start = chrono::high_resolution_clock::now();
+        vector<Event> events = readAll();
+        int steps = 0;
+        bool found = false;
+
+        for (const auto& e : events) {
+        steps++;
+        if (e.description.find(keyword) != string::npos) {
+            cout << "[" << e.ID << "] " << e.description << endl;
+            found = true;
+        }
+        }
+
+    cout << "Linear Search Steps: " << steps << endl;
+    if (!found) cout << "No match found.\n";
+
+        auto end = chrono::high_resolution_clock::now();
+        cout << "Time: "
+        << chrono::duration<double, milli>(end - start).count()
+        << " ms\n";
+    }
+
+static bool compareDesc(const Event& a, const Event& b) {
+    return a.description < b.description;
+}
+
+    void binarySearch(const string& keyword) {
+    auto start = chrono::high_resolution_clock::now();
+        vector<Event> events = readAll();
+
+    // MUST SORT FIRST
+    sort(events.begin(), events.end(), compareDesc);
+
+    int left = 0, right = events.size() - 1;
+    int steps = 0;
+
+    while (left <= right) {
+        steps++;
+        int mid = (left + right) / 2;
+
+        if (events[mid].description == keyword) {
+            cout << "Found: [" << events[mid].ID << "] "
+                 << events[mid].description << endl;
+            cout << "Binary Search Steps: " << steps << endl;
+            return;
+        }
+        else if (events[mid].description < keyword) {
+            left = mid + 1;
+        }
+        else {
+            right = mid - 1;
+        }
+    }
+
+    cout << "Not found.\n";
+    cout << "Binary Search Steps: " << steps << endl;
+
+        auto end = chrono::high_resolution_clock::now();
+        cout << "Time: "
+        << chrono::duration<double, milli>(end - start).count()
+        << " ms\n";
+    }
+
+    void bubbleSortByDate() {
+        auto start = chrono::high_resolution_clock::now();
+    vector<Event> events = readAll();
+    int n = events.size();
+    int steps = 0;
+
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            steps++;
+            if (events[j].date > events[j + 1].date) {
+                swap(events[j], events[j + 1]);
+            }
+        }
+    }
+
+    cout << "Bubble Sort Steps: " << steps << endl;
+
+    for (const auto& e : events) {
+        cout << e.date << " -> " << e.description << endl;
+    }
+
+        auto end = chrono::high_resolution_clock::now();
+        cout << "Time: "
+        << chrono::duration<double, milli>(end - start).count()
+        << " ms\n";
+    }
+
+    void fastSortByDate() {
+    auto start = chrono::high_resolution_clock::now();
+    vector<Event> events = readAll();
+
+    int steps = 0;
+
+    sort(events.begin(), events.end(),
+        [&steps](const Event& a, const Event& b) {
+            steps++;
+            return a.date < b.date;
+        });
+
+    cout << "std::sort Steps (approx): " << steps << endl;
+
+    for (const auto& e : events) {
+        cout << e.date << " -> " << e.description << endl;
+    }
+
+        auto end = chrono::high_resolution_clock::now();
+        cout << "Time: "
+        << chrono::duration<double, milli>(end - start).count()
+        << " ms\n";
+    }
+
+
 };
 
 
@@ -162,6 +325,12 @@ void showMenu() {
     cout << "3. Search Event\n";
     cout << "4. Count Events\n";
     cout << "5. Show All\n";
+    cout << "6. Linear Search\n";
+    cout << "7. Binary Search\n";
+    cout << "8. Bubble Sort\n";
+    cout << "9. Fast Sort\n";
+    cout << "10. Map Search by ID\n";
+    cout << "11. Show Map (Ordered)\n";
     cout << "0. Exit\n";
     cout << "Choose: ";
 }
@@ -210,11 +379,40 @@ int main() {
             case 5:
                 manager.printAll();
                 break;
-
+            case 6: {
+                string keyword;
+                cout << "Keyword: ";
+                getline(cin, keyword);
+                manager.linearSearch(keyword);
+                break;
+                    }
+            case 7: {
+                string keyword;
+                cout << "Keyword (exact match): ";
+                getline(cin, keyword);
+                manager.binarySearch(keyword);
+                 break;
+                    }
+            case 8:
+                manager.bubbleSortByDate();
+                break;
+            case 9:
+                 manager.fastSortByDate();
+                break;
             case 0:
                 cout << "Bye!\n";
                 return 0;
-
+            case 10: {
+                int id;
+                cout << "Enter ID: ";
+                cin >> id;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                manager.mapSearchByID(id);
+                break;
+                    }
+            case 11:
+                manager.printMapOrdered();
+                break;
             default:
                 cout << "Invalid choice.\n";
         }
