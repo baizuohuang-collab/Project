@@ -1,187 +1,192 @@
 #include <iostream>
-#include <string>
 #include <vector>
+#include <string>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
+#include <map>
 #include <ctime>
 #include <thread>
 #include <chrono>
 #include <set>
+#include <limits>
 #include <windows.h>
 
 using namespace std;
 
-// ===================== Event =====================
 class Event {
 public:
-    int ID;
-    int weekday; // 0=Sun ... 6=Sat
-    string time; // HH:MM
-    string description;
-
+    int id;
+    string date;
+    string time;
+    string desc;
     static int counter;
 
-    Event() { ID = -1; }
-
-    Event(int wd, string t, string desc) {
-        ID = counter++;
-        weekday = wd;
-        time = t;
-        description = desc;
+    Event() : id(0) {}
+    Event(string d, string t, string de) : date(d), time(t), desc(de) {
+        id = counter++;
     }
 
-    string toString() const {
-        return to_string(ID) + "|" + to_string(weekday) + "|" + time + "|" + description;
+    string serialize() const {
+        return to_string(id) + "|" + date + "|" + time + "|" + desc;
     }
 
-    static Event fromString(const string& line) {
+    static Event deserialize(const string& line) {
         stringstream ss(line);
-        string token;
-        vector<string> parts;
+        string part, id_str, d, t, de;
+        getline(ss, id_str, '|');
+        getline(ss, d, '|');
+        getline(ss, t, '|');
+        getline(ss, de, '|');
 
-        while (getline(ss, token, '|')) {
-            parts.push_back(token);
-        }
-
-        Event e(stoi(parts[1]), parts[2], parts[3]);
-        e.ID = stoi(parts[0]);
-
-        if (e.ID >= counter) counter = e.ID + 1;
-
+        Event e(d, t, de);
+        e.id = stoi(id_str);
+        if (e.id >= counter) counter = e.id + 1;
         return e;
     }
 };
 
 int Event::counter = 0;
 
-
-// ===================== Manager =====================
 class Manager {
 private:
-    string filename;
-    set<int> triggered; // prevent duplicate popups
+    string filename = "events.txt";
+    set<int> triggeredToday;
+    int lastDay = -1;
 
 public:
-    Manager(string fname) : filename(fname) {}
-
-    vector<Event> readAll() {
-        vector<Event> events;
+    vector<Event> load() {
+        vector<Event> v;
         ifstream file(filename);
         string line;
+        while (getline(file, line)) if (!line.empty()) v.push_back(Event::deserialize(line));
+        return v;
+    }
 
-        while (getline(file, line)) {
-            if (!line.empty()) {
-                events.push_back(Event::fromString(line));
-            }
-        }
-        return events;
+    void save(const vector<Event>& v) {
+        ofstream file(filename);
+        for (const auto& e : v) file << e.serialize() << endl;
     }
 
     void addEvent() {
-        int weekday;
-        string time, desc;
-
-        cout << "Enter weekday (0=Sun,1=Mon,...6=Sat): ";
-        cin >> weekday;
-        cin.ignore();
-
-        cout << "Enter time (HH:MM): ";
-        getline(cin, time);
-
-        cout << "Enter description: ";
-        getline(cin, desc);
-
-        Event e(weekday, time, desc);
-
+        string d, t, de;
+        cout << "Date (YYYY-MM-DD): "; getline(cin, d);
+        cout << "Time (HH:MM): "; getline(cin, t);
+        cout << "Description: "; getline(cin, de);
+        Event e(d, t, de);
         ofstream file(filename, ios::app);
-        file << e.toString() << endl;
-
-        cout << "Added with ID: " << e.ID << endl;
+        file << e.serialize() << endl;
+        cout << "Added with ID: " << e.id << endl;
     }
 
-    void showPopup(const string& msg) {
-        MessageBoxA(NULL, msg.c_str(), "Reminder", MB_OK | MB_ICONINFORMATION);
+    void removeEvent() {
+        int id;
+        cout << "Enter ID: "; cin >> id; cin.ignore();
+        vector<Event> v = load();
+        auto it = remove_if(v.begin(), v.end(), [id](const Event& e) { return e.id == id; });
+        if (it != v.end()) { v.erase(it, v.end()); save(v); cout << "Removed.\n"; }
+        else cout << "Not found.\n";
     }
 
-    time_t getNextReminderTime(const Event& e) {
-        time_t now = time(nullptr);
-        tm* now_tm = localtime(&now);
-
-        int currentDay = now_tm->tm_wday;
-
-        int daysAhead = (e.weekday - currentDay + 7) % 7;
-
-        tm event_tm = *now_tm;
-        event_tm.tm_mday += daysAhead;
-
-        sscanf(e.time.c_str(), "%d:%d", &event_tm.tm_hour, &event_tm.tm_min);
-        event_tm.tm_sec = 0;
-
-        time_t eventTime = mktime(&event_tm);
-
-        return eventTime - 600; // 10 minutes before
+    void linearSearch() {
+        string key;
+        cout << "Keyword: "; getline(cin, key);
+        for (auto& e : load()) if (e.desc.find(key) != string::npos) cout << e.id << " -> " << e.desc << endl;
     }
 
-    void startReminderSystem() {
-        while (true) {
-            vector<Event> events = readAll();
-            time_t now = time(nullptr);
-
-            for (const auto& e : events) {
-                time_t reminderTime = getNextReminderTime(e);
-
-                // check within 30 sec window
-                if (difftime(now, reminderTime) >= 0 &&
-                    difftime(now, reminderTime) < 30) {
-
-                    if (triggered.find(e.ID) == triggered.end()) {
-                        showPopup("Reminder: " + e.description);
-                        triggered.insert(e.ID);
-                    }
-                }
-            }
-
-            this_thread::sleep_for(chrono::seconds(10));
+    void binarySearch() {
+        string key;
+        cout << "Exact description: "; getline(cin, key);
+        vector<Event> v = load();
+        sort(v.begin(), v.end(), [](const Event& a, const Event& b) { return a.desc < b.desc; });
+        int l = 0, r = (int)v.size() - 1;
+        while (l <= r) {
+            int m = l + (r - l) / 2;
+            if (v[m].desc == key) { cout << "Found: " << v[m].id << endl; return; }
+            else if (v[m].desc < key) l = m + 1;
+            else r = m - 1;
         }
+        cout << "Not found.\n";
     }
-};
 
+    void mapSearch() {
+        int id;
+        cout << "Enter ID: "; cin >> id; cin.ignore();
+        map<int, Event> m;
+        for (auto& e : load()) m[e.id] = e;
+        if (m.count(id)) cout << "Found: " << m[id].desc << endl;
+        else cout << "Not found.\n";
+    }
 
-// ===================== Menu =====================
-void showMenu() {
-    cout << "\n===== MENU =====\n";
-    cout << "1. Add Event\n";
-    cout << "0. Exit\n";
-    cout << "Choose: ";
-}
+    void bubbleSort() {
+        vector<Event> v = load();
+        for (size_t i = 0; i < v.size(); i++)
+            for (size_t j = 0; j < v.size() - i - 1; j++)
+                if (v[j].date > v[j + 1].date) swap(v[j], v[j + 1]);
+        for (auto& e : v) cout << e.date << " " << e.time << " -> " << e.desc << endl;
+    }
 
+    void fastSort() {
+        vector<Event> v = load();
+        sort(v.begin(), v.end(), [](const Event& a, const Event& b) { return a.date < b.date; });
+        for (auto& e : v) cout << e.date << " " << e.time << " -> " << e.desc << endl;
+    }
 
-// ===================== Main =====================
-int main() {
-    Manager manager("events.txt");
+    time_t toTime(string date, string time) {
+        tm t = {};
+        sscanf_s(date.c_str(), "%d-%d-%d", &t.tm_year, &t.tm_mon, &t.tm_mday);
+        sscanf_s(time.c_str(), "%d:%d", &t.tm_hour, &t.tm_min);
+        t.tm_year -= 1900; t.tm_mon -= 1;
+        return mktime(&t);
+    }
 
-    // 🔥 Start background reminder system
-    thread t(&Manager::startReminderSystem, &manager);
-    t.detach();
-
-    int choice;
+void reminderLoop() {
+    vector<Event> events = load(); // load once
 
     while (true) {
-        showMenu();
-        cin >> choice;
-        cin.ignore();
+        time_t now = time(0);
+        tm t;
+        localtime_s(&t, &now);
 
+        if (t.tm_mday != lastDay) {
+            triggeredToday.clear();
+            lastDay = t.tm_mday;
+        }
+
+        for (auto& e : events) {
+            time_t et = toTime(e.date, e.time);
+
+            // Trigger only once within a 3-second window
+            if (abs(difftime(now, et - 600)) < 3 && !triggeredToday.count(e.id)) {
+                MessageBoxA(NULL, e.desc.c_str(), "Reminder", MB_OK | MB_SETFOREGROUND);
+                triggeredToday.insert(e.id);
+            }
+        }
+
+        this_thread::sleep_for(chrono::seconds(5));
+    }
+}
+
+};
+
+int main() {
+    Manager m;
+    thread t(&Manager::reminderLoop, &m);
+    t.detach();
+    int choice;
+    while (true) {
+        cout << "\n1.Add 2.Remove 3.Linear 4.Binary 5.Map 6.Bubble 7.Fast 0.Exit\nChoose: ";
+        if (!(cin >> choice)) { cin.clear(); cin.ignore(1000, '\n'); continue; }
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         switch (choice) {
-            case 1:
-                manager.addEvent();
-                break;
-
-            case 0:
-                cout << "Bye!\n";
-                return 0;
-
-            default:
-                cout << "Invalid.\n";
+            case 1: m.addEvent(); break;
+            case 2: m.removeEvent(); break;
+            case 3: m.linearSearch(); break;
+            case 4: m.binarySearch(); break;
+            case 5: m.mapSearch(); break;
+            case 6: m.bubbleSort(); break;
+            case 7: m.fastSort(); break;
+            case 0: return 0;
         }
     }
 }
