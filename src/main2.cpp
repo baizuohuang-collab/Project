@@ -31,7 +31,7 @@ public:
     }
 
     string serialize() const {
-        return to_string(id) + "|" + date + "|" + time + "|" + desc;
+        return to_string(id) + "| " + date + "| " + time + "| " + desc;
     }
 
     static Event deserialize(const string& line) {
@@ -312,7 +312,7 @@ public:
     // ================= REMINDER LOOP =================
     void reminderLoop() {
 
-        while (true) {
+        
 
             time_t now = time(0);
 
@@ -359,7 +359,7 @@ public:
             this_thread::sleep_for(
                 chrono::seconds(1)
             );
-        }
+        
     }
 };
 
