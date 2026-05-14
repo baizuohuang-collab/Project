@@ -310,57 +310,74 @@ public:
     }
 
     // ================= REMINDER LOOP =================
-    void reminderLoop() {
+void reminderLoop() {
 
-        
+    vector<Event> events = load();
 
-            time_t now = time(0);
+    const string weekdays[7] = {
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
+    };
 
-            tm localTime;
+    // store formatted calendar text
+    string calendarText;
 
-            localtime_s(&localTime, &now);
+    // map weekday -> list of events
+    map<int, vector<Event>> weeklyEvents;
 
-            // reset every new day
-            if (localTime.tm_mday != lastDay) {
-                triggeredToday.clear();
-                lastDay = localTime.tm_mday;
-            }
+    // ================= GROUP EVENTS =================
+    for (const auto& e : events) {
 
-            // IMPORTANT:
-            // reload every loop
-            vector<Event> events = load();
+        time_t eventTime = toTime(e.date, e.time);
 
-            for (const auto& e : events) {
+        tm localEventTime;
 
-                time_t eventTime = toTime(e.date, e.time);
+        localtime_s(&localEventTime, &eventTime);
 
-                // 10 minutes before
-                time_t reminderTime = eventTime - 600;
+        int weekday = localEventTime.tm_wday;
 
-                double diff = difftime(now, reminderTime);
-
-                // trigger once only
-                if (diff >= 0 && diff <= 1) {
-
-                    if (!triggeredToday.count(e.id)) {
-
-                        MessageBoxA(
-                            NULL,
-                            e.desc.c_str(),
-                            "Reminder",
-                            MB_OK | MB_SETFOREGROUND
-                        );
-
-                        triggeredToday.insert(e.id);
-                    }
-                }
-            }
-
-            this_thread::sleep_for(
-                chrono::seconds(1)
-            );
-        
+        weeklyEvents[weekday].push_back(e);
     }
+
+    // ================= BUILD CALENDAR TEXT =================
+    for (int day = 0; day < 7; day++) {
+
+        calendarText += "======== ";
+        calendarText += weekdays[day];
+        calendarText += " ========\n";
+
+        if (weeklyEvents[day].empty()) {
+
+            calendarText += "No Events\n\n";
+        }
+        else {
+
+            for (const auto& e : weeklyEvents[day]) {
+
+                calendarText += e.time;
+                calendarText += "  -  ";
+                calendarText += e.desc;
+                calendarText += "\n";
+            }
+
+            calendarText += "\n";
+        }
+    }
+
+    // ================= SHOW POPUP =================
+    MessageBoxA(
+        NULL,
+        calendarText.c_str(),
+        "Weekly Calendar",
+        MB_OK | MB_SETFOREGROUND
+    );
+}
+
 };
 
 // ================= MAIN =================
@@ -368,12 +385,14 @@ int main() {
 
     Manager m;
 
-    thread t(
+    m.reminderLoop();
+
+    /*thread t(
         &Manager::reminderLoop,
         &m
     );
 
-    t.detach();
+    t.detach();*/
 
     int choice;
 
@@ -388,6 +407,7 @@ int main() {
         cout << "5. Map Search\n";
         cout << "6. Bubble Sort\n";
         cout << "7. Fast Sort\n";
+        cout << "8. Show Weekly Calendar\n";
         cout << "0. Exit\n";
 
         cout << "Choose: ";
@@ -439,6 +459,9 @@ int main() {
             m.fastSort();
             break;
 
+        case 8:
+            m.reminderLoop();
+            break;
         case 0:
             return 0;
 
