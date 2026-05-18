@@ -11,6 +11,7 @@
 #include <set>
 #include <limits>
 #include <windows.h>
+#include <iomanip>
 
 using namespace std;
 
@@ -310,7 +311,7 @@ public:
     }
 
     // ================= REMINDER LOOP =================
-void reminderLoop() {
+    void reminderLoop() {
 
     vector<Event> events = load();
 
@@ -324,59 +325,359 @@ void reminderLoop() {
         "Saturday"
     };
 
-    // store formatted calendar text
-    string calendarText;
-
-    // map weekday -> list of events
     map<int, vector<Event>> weeklyEvents;
 
-    // ================= GROUP EVENTS =================
+    // ================= GET CURRENT WEEK =================
+
+    time_t now = time(0);
+
+    tm currentTime;
+
+    localtime_s(&currentTime, &now);
+
+    // current weekday
+    int currentWeekday = currentTime.tm_wday;
+
+    // make Monday = 0
+    int mondayOffset =
+        (currentWeekday == 0) ? 6 : currentWeekday - 1;
+
+    // current monday date
+    currentTime.tm_mday -= mondayOffset;
+
+    mktime(&currentTime);
+
+    int mondayYear =
+        currentTime.tm_year + 1900;
+
+    int mondayMonth =
+        currentTime.tm_mon + 1;
+
+    int mondayDay =
+        currentTime.tm_mday;
+
+    // ================= CHECK EVENTS =================
+
     for (const auto& e : events) {
 
-        time_t eventTime = toTime(e.date, e.time);
+        int y, m, d;
 
-        tm localEventTime;
+        sscanf_s(
+            e.date.c_str(),
+            "%d-%d-%d",
+            &y,
+            &m,
+            &d
+        );
 
-        localtime_s(&localEventTime, &eventTime);
+        tm eventTm = {};
 
-        int weekday = localEventTime.tm_wday;
+        eventTm.tm_year = y - 1900;
+        eventTm.tm_mon = m - 1;
+        eventTm.tm_mday = d;
 
-        weeklyEvents[weekday].push_back(e);
+        mktime(&eventTm);
+
+        // weekday
+        int weekday =
+            eventTm.tm_wday;
+
+        // compare week difference
+        double daysDiff =
+            difftime(
+                mktime(&eventTm),
+                mktime(&currentTime)
+            ) / 86400.0;
+
+        // only current week
+        if (daysDiff >= 0 &&
+            daysDiff < 7) {
+
+            weeklyEvents[weekday]
+                .push_back(e);
+        }
     }
 
-    // ================= BUILD CALENDAR TEXT =================
-    for (int day = 0; day < 7; day++) {
+    // ================= BUILD TEXT =================
 
-        calendarText += "======== ";
-        calendarText += weekdays[day];
-        calendarText += " ========\n";
+    string calendarText;
+
+    calendarText +=
+        "CURRENT WEEK EVENTS\n\n";
+
+    int order[7] = {
+        1, 2, 3, 4, 5, 6, 0
+    };
+
+    for (int i = 0; i < 7; i++) {
+
+        int day = order[i];
+
+        calendarText +=
+            "========== ";
+
+        calendarText +=
+            weekdays[day];
+
+        calendarText +=
+            " ==========\n";
 
         if (weeklyEvents[day].empty()) {
 
-            calendarText += "No Events\n\n";
+            calendarText +=
+                "No Events\n\n";
         }
         else {
 
-            for (const auto& e : weeklyEvents[day]) {
+            sort(
+                weeklyEvents[day].begin(),
+                weeklyEvents[day].end(),
+                [](const Event& a,
+                   const Event& b) {
 
-                calendarText += e.time;
-                calendarText += "  -  ";
-                calendarText += e.desc;
-                calendarText += "\n";
+                    return a.time < b.time;
+                }
+            );
+
+            for (const auto& e :
+                 weeklyEvents[day]) {
+
+                calendarText +=
+                    e.date;
+
+                calendarText +=
+                    " ";
+
+                calendarText +=
+                    e.time;
+
+                calendarText +=
+                    "\n";
+
+                calendarText +=
+                    e.desc;
+
+                calendarText +=
+                    "\n\n";
             }
-
-            calendarText += "\n";
         }
     }
 
-    // ================= SHOW POPUP =================
+    // ================= SHOW WINDOW =================
+
     MessageBoxA(
         NULL,
         calendarText.c_str(),
         "Weekly Calendar",
         MB_OK | MB_SETFOREGROUND
     );
-}
+    }
+
+    //================= DAYS IN MONTH =================
+    int getDaysInMonth(int year, int month) {
+
+    if (month == 2) {
+
+        bool leap = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+
+        return leap ? 29 : 28;
+    }
+
+    if (month == 4 || month == 6 || month == 9 || month == 11)
+        return 30;
+
+    return 31;
+    }
+
+    // ================= FIRST WEEKDAY =================
+    int getFirstWeekday(int year, int month) {
+
+    tm timeStruct = {};
+
+    timeStruct.tm_year = year - 1900;
+    timeStruct.tm_mon = month - 1;
+    timeStruct.tm_mday = 1;
+
+    mktime(&timeStruct);
+
+    return timeStruct.tm_wday;
+    }
+
+    // ================= HAS EVENT =================
+    bool hasEvent(int year, int month, int day) {
+
+    vector<Event> events = load();
+
+    for (const auto& e : events) {
+
+        int y, m, d;
+
+        sscanf_s(
+            e.date.c_str(),
+            "%d-%d-%d",
+            &y,
+            &m,
+            &d
+        );
+
+        if (y == year && m == month && d == day)
+            return true;
+    }
+
+    return false;
+    }
+
+    // ================= SHOW EVENTS OF DATE =================
+    void showEventsOfDate(int year, int month, int day) {
+
+    vector<Event> events = load();
+
+    cout << "\n===== EVENTS =====\n";
+
+    bool found = false;
+
+    for (const auto& e : events) {
+
+        int y, m, d;
+
+        sscanf_s(
+            e.date.c_str(),
+            "%d-%d-%d",
+            &y,
+            &m,
+            &d
+        );
+
+        if (y == year && m == month && d == day) {
+
+            cout << e.time
+                 << " -> "
+                 << e.desc
+                 << endl;
+
+            found = true;
+        }
+    }
+
+    if (!found)
+        cout << "No events\n";
+    }
+
+    // ================= SHOW CALENDAR =================
+    void showCalendar(int year, int month) {
+
+    system("cls");
+
+    const string months[12] = {
+        "January", "February", "March",
+        "April", "May", "June",
+        "July", "August", "September",
+        "October", "November", "December"
+    };
+
+    cout << "\n========== "
+         << months[month - 1]
+         << " "
+         << year
+         << " ==========\n\n";
+
+    cout << "Sun Mon Tue Wed Thu Fri Sat\n";
+
+    int firstDay = getFirstWeekday(year, month);
+
+    int totalDays = getDaysInMonth(year, month);
+
+    for (int i = 0; i < firstDay; i++) {
+        cout << "    ";
+    }
+
+    for (int day = 1; day <= totalDays; day++) {
+
+        bool eventExists = hasEvent(year, month, day);
+
+        if (eventExists) {
+            cout << "[" << setw(2) << day << "]";
+        }
+        else {
+            cout << setw(4) << day;
+        }
+
+        if ((firstDay + day) % 7 == 0)
+            cout << endl;
+    }
+
+    cout << "\n\n";
+
+    cout << "[ ] means this date has events\n";
+    }
+
+    // ================= CALENDAR MENU =================
+    void calendarMenu() {
+    time_t now = time(0);
+
+    tm localTime;
+
+    localtime_s(&localTime, &now);
+
+    int year = localTime.tm_year + 1900;
+    int month = localTime.tm_mon + 1;
+
+    while (true) {
+
+        showCalendar(year, month);
+
+        cout << "\nOptions:\n";
+        cout << "1. Next Month\n";
+        cout << "2. Previous Month\n";
+        cout << "3. View Date Events\n";
+        cout << "0. Exit Calendar\n";
+
+        int choice;
+
+        cin >> choice;
+
+        cin.ignore();
+
+        if (choice == 1) {
+
+            month++;
+
+            if (month > 12) {
+                month = 1;
+                year++;
+            }
+        }
+
+        else if (choice == 2) {
+
+            month--;
+
+            if (month < 1) {
+                month = 12;
+                year--;
+            }
+        }
+
+        else if (choice == 3) {
+
+            int day;
+
+            cout << "Enter day: ";
+
+            cin >> day;
+
+            cin.ignore();
+
+            showEventsOfDate(year, month, day);
+
+            system("pause");
+        }
+
+        else if (choice == 0) {
+            break;
+        }
+    }
+    }
 
 };
 
@@ -408,6 +709,7 @@ int main() {
         cout << "6. Bubble Sort\n";
         cout << "7. Fast Sort\n";
         cout << "8. Show Weekly Calendar\n";
+        cout << "9. Calendar\n";
         cout << "0. Exit\n";
 
         cout << "Choose: ";
@@ -462,6 +764,11 @@ int main() {
         case 8:
             m.reminderLoop();
             break;
+
+        case 9:
+            m.calendarMenu();
+            break;
+
         case 0:
             return 0;
 
