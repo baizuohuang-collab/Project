@@ -15,6 +15,71 @@
 
 using namespace std;
 
+
+    // ================= SHOW GUI WINDOW =================
+
+    std::string globalText = "Hello from your GUI window!\nYou can put your weekly calendar here.";
+
+    LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
+        case WM_PAINT: {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hwnd, &ps);
+
+            RECT rect;
+            GetClientRect(hwnd, &rect);
+
+            DrawTextA(hdc, globalText.c_str(), -1, &rect, DT_LEFT | DT_TOP | DT_WORDBREAK);
+
+            EndPaint(hwnd, &ps);
+        }
+        return 0;
+
+        case WM_DESTROY:
+            PostQuitMessage(0);
+            return 0;
+    }
+    return DefWindowProc(hwnd, uMsg, wParam, lParam);
+    }
+
+    void showGuiWindow(const std::string& text) {
+    globalText = text;
+
+    HINSTANCE hInstance = GetModuleHandle(NULL);
+
+    const char CLASS_NAME[] = "MyWindowClass";
+
+    WNDCLASSA wc = {};
+    wc.lpfnWndProc = WindowProc;
+    wc.hInstance = hInstance;
+    wc.lpszClassName = CLASS_NAME;
+    wc.hbrBackground = CreateSolidBrush(RGB(0, 199, 240));
+
+
+    RegisterClassA(&wc);
+
+    HWND hwnd = CreateWindowExA(
+        0,
+        CLASS_NAME,
+        "Weekly Calendar",
+        WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+        CW_USEDEFAULT, CW_USEDEFAULT,
+        600, 500,   // <-- WINDOW SIZE HERE
+        NULL,
+        NULL,
+        hInstance,
+        NULL
+    );
+
+    MSG msg = {};
+    while (GetMessage(&msg, NULL, 0, 0)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+    }
+
+
+
 class Event {
 public:
     int id;
@@ -118,54 +183,133 @@ public:
 
     // ================= REMOVE =================
     void removeEvent() {
-        int id;
 
-        cout << "Enter ID: ";
+    int id;
 
-        cin >> id;
+    cout << "Enter ID to remove: ";
 
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    cin >> id;
 
-        vector<Event> v = load();
+    cin.ignore(
+        numeric_limits<streamsize>::max(),
+        '\n'
+    );
 
-        auto it = remove_if(
-            v.begin(),
-            v.end(),
-            [id](const Event& e) {
-                return e.id == id;
-            }
-        );
+    vector<Event> v = load();
 
-        if (it != v.end()) {
-            v.erase(it, v.end());
+    bool found = false;
 
-            save(v);
+    // ================= FIND EVENT =================
 
-            cout << "Removed.\n";
+    for (const auto& e : v) {
+
+        if (e.id == id) {
+
+            found = true;
+
+            cout << "\nEvent Found:\n";
+
+            cout << "Date: "
+                 << e.date
+                 << endl;
+
+            cout << "Time: "
+                 << e.time
+                 << endl;
+
+            cout << "Description: "
+                 << e.desc
+                 << endl;
+
+            break;
         }
-        else {
-            cout << "Not found.\n";
+    }
+
+    if (!found) {
+
+        cout << "Event not found.\n";
+
+        return;
+    }
+
+    // ================= CONFIRM DELETE =================
+
+    char confirm;
+
+    cout << "\nAre you sure you want to delete this event? (y/n): ";
+
+    cin >> confirm;
+
+    cin.ignore(
+        numeric_limits<streamsize>::max(),
+        '\n'
+    );
+
+    if (confirm != 'y' &&
+        confirm != 'Y') {
+
+        cout << "Deletion cancelled.\n";
+
+        return;
+    }
+
+    // ================= DELETE EVENT =================
+
+    auto it = remove_if(
+        v.begin(),
+        v.end(),
+        [id](const Event& e) {
+
+            return e.id == id;
         }
+    );
+
+    v.erase(it, v.end());
+
+    // ================= REBUILD IDS =================
+
+    for (size_t i = 0; i < v.size(); i++) {
+
+        v[i].id = i;
+    }
+
+    // IMPORTANT:
+    // reset counter
+    Event::counter = v.size();
+
+    // save updated data
+    save(v);
+
+    cout << "Event deleted successfully.\n";
     }
 
     // ================= LINEAR SEARCH =================
     void linearSearch() {
-        string key;
+    string key;
+    cout << "Keyword: ";
+    getline(cin, key);
 
-        cout << "Keyword: ";
+    vector<Event> v = load();
 
-        getline(cin, key);
+    for (const auto& e : v) {
+        string word;
+        stringstream ss(e.desc);
+        bool found = false;
 
-        vector<Event> v = load();
-
-        for (const auto& e : v) {
-            if (e.desc.find(key) != string::npos) {
-                cout << e.id << " -> "
-                     << e.date << " "
-                     << e.time << " "
-                     << e.desc << endl;
+        while (ss >> word) {
+            if (word == key) {
+                found = true;
+                break;
             }
         }
+
+        if (found) {
+            cout << e.id << " -> "
+                 << e.date << " "
+                 << e.time << " "
+                 << e.desc << endl;
+        }
+    }
     }
 
     // ================= BINARY SEARCH =================
@@ -252,6 +396,13 @@ public:
             }
         }
 
+        // Reassign IDs in sorted order
+        for (size_t i = 0; i < v.size(); i++) {
+             v[i].id = i + 1;   // IDs become 1,2,3,...
+        }
+
+        save(v);
+
         for (const auto& e : v) {
             cout << e.date
                  << " "
@@ -273,6 +424,13 @@ public:
                 return a.date < b.date;
             }
         );
+
+            // Reassign IDs in sorted order
+        for (size_t i = 0; i < v.size(); i++) {
+            v[i].id = i + 1;   // IDs become 1,2,3,...
+        }
+
+        save(v);
 
         for (const auto& e : v) {
             cout << e.date
@@ -312,165 +470,116 @@ public:
 
     // ================= REMINDER LOOP =================
     void reminderLoop() {
+    std::vector<Event> events = load();
 
-    vector<Event> events = load();
-
-    const string weekdays[7] = {
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday"
+    const std::string weekdays[7] = {
+        "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
     };
 
-    map<int, vector<Event>> weeklyEvents;
+    std::map<int, std::vector<Event>> weeklyEvents;
 
     // ================= GET CURRENT WEEK =================
-
     time_t now = time(0);
-
     tm currentTime;
-
     localtime_s(&currentTime, &now);
 
-    // current weekday
+    // Current weekday (0 = Sunday, 1 = Monday, ...)
     int currentWeekday = currentTime.tm_wday;
 
-    // make Monday = 0
-    int mondayOffset =
-        (currentWeekday == 0) ? 6 : currentWeekday - 1;
+    // Make Monday = 0, Tuesday = 1, ..., Sunday = 6
+    int mondayOffset = (currentWeekday == 0) ? 6 : currentWeekday - 1;
 
-    // current monday date
+    // Calculate this week's Monday date
     currentTime.tm_mday -= mondayOffset;
+    
+    // Clear out hours/minutes/seconds to make comparisons purely date-based
+    currentTime.tm_hour = 0;
+    currentTime.tm_min = 0;
+    currentTime.tm_sec = 0;
+    currentTime.tm_isdst = -1; // Let the system determine daylight saving time
 
-    mktime(&currentTime);
-
-    int mondayYear =
-        currentTime.tm_year + 1900;
-
-    int mondayMonth =
-        currentTime.tm_mon + 1;
-
-    int mondayDay =
-        currentTime.tm_mday;
+    // Normalize Monday time once to get a clean, solid timestamp
+    time_t mondayTimestamp = mktime(&currentTime);
 
     // ================= CHECK EVENTS =================
-
     for (const auto& e : events) {
+        int y = 0, m = 0, d = 0;
 
-        int y, m, d;
-
-        sscanf_s(
-            e.date.c_str(),
-            "%d-%d-%d",
-            &y,
-            &m,
-            &d
-        );
+        // Parse date strings safely
+        if (sscanf_s(e.date.c_str(), "%d-%d-%d", &y, &m, &d) != 3) {
+            continue; // Skip invalid date strings to avoid garbage data
+        }
 
         tm eventTm = {};
-
         eventTm.tm_year = y - 1900;
         eventTm.tm_mon = m - 1;
         eventTm.tm_mday = d;
+        eventTm.tm_hour = 0;
+        eventTm.tm_min = 0;
+        eventTm.tm_sec = 0;
+        eventTm.tm_isdst = -1;
 
-        mktime(&eventTm);
+        // Normalize event time once to get its timestamp
+        time_t eventTimestamp = mktime(&eventTm);
 
-        // weekday
-        int weekday =
-            eventTm.tm_wday;
+        // Compare week difference using stable timestamps
+        double secondsDiff = difftime(eventTimestamp, mondayTimestamp);
+        double daysDiff = secondsDiff / 86400.0;
 
-        // compare week difference
-        double daysDiff =
-            difftime(
-                mktime(&eventTm),
-                mktime(&currentTime)
-            ) / 86400.0;
-
-        // only current week
-        if (daysDiff >= 0 &&
-            daysDiff < 7) {
-
-            weeklyEvents[weekday]
-                .push_back(e);
+        // Account for potential slight rounding bugs or daylight savings time shifts
+        // Checking from Day 0 (Monday) through Day 6 (Sunday) inclusively
+        if (daysDiff >= -0.1 && daysDiff < 6.9) {
+            weeklyEvents[eventTm.tm_wday].push_back(e);
         }
     }
 
     // ================= BUILD TEXT =================
+    std::string calendarText;
+    calendarText += "CURRENT WEEK EVENTS\n\n";
 
-    string calendarText;
-
-    calendarText +=
-        "CURRENT WEEK EVENTS\n\n";
-
-    int order[7] = {
-        1, 2, 3, 4, 5, 6, 0
-    };
+    // Display order: Monday through Sunday
+    int order[7] = { 1, 2, 3, 4, 5, 6, 0 };
 
     for (int i = 0; i < 7; i++) {
-
         int day = order[i];
 
-        calendarText +=
-            "========== ";
-
-        calendarText +=
-            weekdays[day];
-
-        calendarText +=
-            " ==========\n";
+        calendarText += "========== ";
+        calendarText += weekdays[day];
+        calendarText += " ==========\n";
 
         if (weeklyEvents[day].empty()) {
-
-            calendarText +=
-                "No Events\n\n";
+            calendarText += "No Events\n\n";
         }
         else {
-
-            sort(
+            // Sort events of the day chronologically by their time string
+            std::sort(
                 weeklyEvents[day].begin(),
                 weeklyEvents[day].end(),
-                [](const Event& a,
-                   const Event& b) {
-
+                [](const Event& a, const Event& b) {
                     return a.time < b.time;
                 }
             );
 
-            for (const auto& e :
-                 weeklyEvents[day]) {
-
-                calendarText +=
-                    e.date;
-
-                calendarText +=
-                    " ";
-
-                calendarText +=
-                    e.time;
-
-                calendarText +=
-                    "\n";
-
-                calendarText +=
-                    e.desc;
-
-                calendarText +=
-                    "\n\n";
+            for (const auto& e : weeklyEvents[day]) {
+                calendarText += e.date;
+                calendarText += " ";
+                calendarText += e.time;
+                calendarText += "\n";
+                calendarText += e.desc;
+                calendarText += "\n\n";
             }
         }
     }
 
     // ================= SHOW WINDOW =================
-
-    MessageBoxA(
+    /*MessageBoxA(
         NULL,
         calendarText.c_str(),
         "Weekly Calendar",
         MB_OK | MB_SETFOREGROUND
-    );
+    );*/
+    showGuiWindow(calendarText);
+
     }
 
     //================= DAYS IN MONTH =================
@@ -679,7 +788,8 @@ public:
     }
     }
 
-};
+    };
+
 
 // ================= MAIN =================
 int main() {
@@ -705,7 +815,7 @@ int main() {
         cout << "2. Remove Event\n";
         cout << "3. Linear Search\n";
         cout << "4. Binary Search\n";
-        cout << "5. Map Search\n";
+        cout << "5. Search ID\n";
         cout << "6. Bubble Sort\n";
         cout << "7. Fast Sort\n";
         cout << "8. Show Weekly Calendar\n";
