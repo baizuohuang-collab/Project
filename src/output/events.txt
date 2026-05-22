@@ -1,2 +1,4 @@
-0|     2026/06/29|     09:09|     Don't just talk the talk must do the do 
-1|    2026-05-20|    09:00|    I should wake up early
+1|       2026/06/29|       09:09|       Don't just talk the talk must do the do 
+2|      2026-05-20|      09:00|      I should wake up early
+3|   2026-09-09|   09:09|   I need to wake up earlier
+4| 2026-05-22| 09:09| I need to trim my hair

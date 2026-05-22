@@ -16,11 +16,11 @@
 using namespace std;
 
 
-    // ================= SHOW GUI WINDOW =================
+// ================= SHOW GUI WINDOW =================
 
-    std::string globalText = "Hello from your GUI window!\nYou can put your weekly calendar here.";
+std::string globalText = "Hello from your GUI window!\nYou can put your weekly calendar here.";
 
-    LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
         case WM_PAINT: {
             PAINTSTRUCT ps;
@@ -42,7 +42,7 @@ using namespace std;
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
 
-    void showGuiWindow(const std::string& text) {
+void showGuiWindow(const std::string& text) {
     globalText = text;
 
     HINSTANCE hInstance = GetModuleHandle(NULL);
@@ -53,7 +53,7 @@ using namespace std;
     wc.lpfnWndProc = WindowProc;
     wc.hInstance = hInstance;
     wc.lpszClassName = CLASS_NAME;
-    wc.hbrBackground = CreateSolidBrush(RGB(0, 199, 240));
+    //wc.hbrBackground = CreateSolidBrush(RGB(0, 199, 240));
 
 
     RegisterClassA(&wc);
