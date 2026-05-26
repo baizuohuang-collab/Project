@@ -1,4 +1,11 @@
-1|       2026/06/29|       09:09|       Don't just talk the talk must do the do 
-2|      2026-05-20|      09:00|      I should wake up early
-3|   2026-09-09|   09:09|   I need to wake up earlier
-4| 2026-05-22| 09:09| I need to trim my hair
+1|                        2026-05-20|                        09:00|                        I should wake up early
+2|                   2026-05-26|                   09:09|                   I need to lock in 
+3|                   2026-05-30|                   09:09|                   I need to study 
+4|                   2026-06-01|                   09:09|                   It's time to play
+5|                   2026-06-29|                   08:59|                   I have to be on schedule
+6|                   2026-07-04|                   22:30|                   I need to go to bed early
+7|                 2026-09-09|                 09:09|                 I need to study hard 
+8|            2026-05-29|            08:00|            I need to drop out the claculus 
+9|         2026-05-27|         09:00|         I need to get some sleep
+10|       2026-05-26|       20:00|       I want to give up 
+11|       2026-05-26|       09:00|       I need to sleep

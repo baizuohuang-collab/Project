@@ -64,7 +64,7 @@ void showGuiWindow(const std::string& text) {
         "Weekly Calendar",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
         CW_USEDEFAULT, CW_USEDEFAULT,
-        600, 500,   // <-- WINDOW SIZE HERE
+        1000, 1000,   // <-- WINDOW SIZE HERE
         NULL,
         NULL,
         hInstance,
@@ -314,47 +314,33 @@ public:
 
     // ================= BINARY SEARCH =================
     void binarySearch() {
-        string key;
+    string key;
+    cout << "Keyword: ";
+    getline(cin, key);
 
-        cout << "Exact description: ";
+    vector<Event> v = load();
 
-        getline(cin, key);
+    bool found = false;
 
-        vector<Event> v = load();
+    for (const auto& e : v) {
+        // case-insensitive search (optional)
+        string descLower = e.desc;
+        string keyLower = key;
 
-        sort(
-            v.begin(),
-            v.end(),
-            [](const Event& a, const Event& b) {
-                return a.desc < b.desc;
-            }
-        );
+        transform(descLower.begin(), descLower.end(), descLower.begin(), ::tolower);
+        transform(keyLower.begin(), keyLower.end(), keyLower.begin(), ::tolower);
 
-        int l = 0;
-        int r = (int)v.size() - 1;
-
-        while (l <= r) {
-            int m = l + (r - l) / 2;
-
-            if (v[m].desc == key) {
-                cout << "Found: "
-                     << v[m].id
-                     << " -> "
-                     << v[m].desc
-                     << endl;
-
-                return;
-            }
-            else if (v[m].desc < key) {
-                l = m + 1;
-            }
-            else {
-                r = m - 1;
-            }
+        if (descLower.find(keyLower) != string::npos) {
+            cout << "Found: " << e.id << " -> " << e.desc << endl;
+            found = true;
         }
-
-        cout << "Not found.\n";
     }
+
+    if (!found) {
+        cout << "No events contain that keyword.\n";
+    }
+    }
+
 
     // ================= MAP SEARCH =================
     void mapSearch() {
@@ -470,103 +456,121 @@ public:
 
     // ================= REMINDER LOOP =================
     void reminderLoop() {
-    std::vector<Event> events = load();
 
-    const std::string weekdays[7] = {
-        "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+    vector<Event> events = load();
+
+    const string weekdays[7] = {
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
     };
 
-    std::map<int, std::vector<Event>> weeklyEvents;
+    // weekday -> events
+    map<int, vector<Event>> groupedEvents;
 
-    // ================= GET CURRENT WEEK =================
-    time_t now = time(0);
-    tm currentTime;
-    localtime_s(&currentTime, &now);
-
-    // Current weekday (0 = Sunday, 1 = Monday, ...)
-    int currentWeekday = currentTime.tm_wday;
-
-    // Make Monday = 0, Tuesday = 1, ..., Sunday = 6
-    int mondayOffset = (currentWeekday == 0) ? 6 : currentWeekday - 1;
-
-    // Calculate this week's Monday date
-    currentTime.tm_mday -= mondayOffset;
-    
-    // Clear out hours/minutes/seconds to make comparisons purely date-based
-    currentTime.tm_hour = 0;
-    currentTime.tm_min = 0;
-    currentTime.tm_sec = 0;
-    currentTime.tm_isdst = -1; // Let the system determine daylight saving time
-
-    // Normalize Monday time once to get a clean, solid timestamp
-    time_t mondayTimestamp = mktime(&currentTime);
-
-    // ================= CHECK EVENTS =================
+    // ================= GROUP ALL EVENTS =================
     for (const auto& e : events) {
-        int y = 0, m = 0, d = 0;
 
-        // Parse date strings safely
-        if (sscanf_s(e.date.c_str(), "%d-%d-%d", &y, &m, &d) != 3) {
-            continue; // Skip invalid date strings to avoid garbage data
+        int y, m, d;
+
+        // parse date
+        if (sscanf_s(
+                e.date.c_str(),
+                "%d-%d-%d",
+                &y,
+                &m,
+                &d
+            ) != 3) {
+
+            continue;
         }
 
         tm eventTm = {};
+
         eventTm.tm_year = y - 1900;
         eventTm.tm_mon = m - 1;
         eventTm.tm_mday = d;
-        eventTm.tm_hour = 0;
-        eventTm.tm_min = 0;
-        eventTm.tm_sec = 0;
-        eventTm.tm_isdst = -1;
 
-        // Normalize event time once to get its timestamp
-        time_t eventTimestamp = mktime(&eventTm);
+        mktime(&eventTm);
 
-        // Compare week difference using stable timestamps
-        double secondsDiff = difftime(eventTimestamp, mondayTimestamp);
-        double daysDiff = secondsDiff / 86400.0;
+        int weekday =
+            eventTm.tm_wday;
 
-        // Account for potential slight rounding bugs or daylight savings time shifts
-        // Checking from Day 0 (Monday) through Day 6 (Sunday) inclusively
-        if (daysDiff >= -0.1 && daysDiff < 6.9) {
-            weeklyEvents[eventTm.tm_wday].push_back(e);
-        }
+        groupedEvents[weekday]
+            .push_back(e);
     }
 
     // ================= BUILD TEXT =================
-    std::string calendarText;
-    calendarText += "CURRENT WEEK EVENTS\n\n";
 
-    // Display order: Monday through Sunday
-    int order[7] = { 1, 2, 3, 4, 5, 6, 0 };
+    string calendarText;
+
+    calendarText +=
+        "ALL EVENTS\n\n";
+
+    // Monday -> Sunday
+    int order[7] = {
+        1, 2, 3, 4, 5, 6, 0
+    };
 
     for (int i = 0; i < 7; i++) {
+
         int day = order[i];
 
-        calendarText += "========== ";
-        calendarText += weekdays[day];
-        calendarText += " ==========\n";
+        calendarText +=
+            "========== ";
 
-        if (weeklyEvents[day].empty()) {
-            calendarText += "No Events\n\n";
+        calendarText +=
+            weekdays[day];
+
+        calendarText +=
+            " ==========\n";
+
+        if (groupedEvents[day].empty()) {
+
+            calendarText +=
+                "No Events\n\n";
         }
         else {
-            // Sort events of the day chronologically by their time string
-            std::sort(
-                weeklyEvents[day].begin(),
-                weeklyEvents[day].end(),
-                [](const Event& a, const Event& b) {
-                    return a.time < b.time;
+
+            // sort by date then time
+            sort(
+                groupedEvents[day].begin(),
+                groupedEvents[day].end(),
+
+                [](const Event& a,
+                   const Event& b) {
+
+                    if (a.date == b.date)
+                        return a.time < b.time;
+
+                    return a.date < b.date;
                 }
             );
 
-            for (const auto& e : weeklyEvents[day]) {
-                calendarText += e.date;
-                calendarText += " ";
-                calendarText += e.time;
-                calendarText += "\n";
-                calendarText += e.desc;
-                calendarText += "\n\n";
+            for (const auto& e :
+                 groupedEvents[day]) {
+
+                calendarText +=
+                    e.date;
+
+                calendarText +=
+                    " ";
+
+                calendarText +=
+                    e.time;
+
+                calendarText +=
+                    "\n";
+
+                calendarText +=
+                    e.desc;
+
+                calendarText +=
+                    "\n\n";
             }
         }
     }
