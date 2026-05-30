@@ -205,212 +205,165 @@ id 的編號並非無法改變的，在大型一點的專案中應該要用指�
 ### 使用方式
 <!-- 如何編譯、執行、使用你的程式 -->
 將main2.cpp的內容貼於編譯器上(Windows的如果是用VScode的話需要另外下載編譯器，因為它是文字編譯器無法編譯)，按下編譯並執行，在相同的專案底下會產生events.txt這個檔案，所有關於檔案的操作都是對此檔案。執行後會先跳出一個Windows視窗(如果編譯失敗，或許是因為權限問題)，關閉後才會開始顯示出使用者介面，選擇功能要以開頭的編號來輸入，要加入檔案需要寫上精確日期時間，日期格式為xxxx-xx-xx，時間格式為xx-xx，如果不符合以上格式將無法輸出此事件，在移除事件時有最後的防護措施以避免刪錯事件，任一排序功能在排完序後，檔案內的事件也會修正成排序後的結果(來改善由時候ID會莫名跳躍的問題)，搜尋功能可打任何關鍵字，但是大小寫不一樣，且空格也會影響，顯示行事曆可以查看有事件的日期其描述為何，僅需輸入那一天的日期即可(eg.20)。
-### 與課程的關聯總結
+### 演算法與資料結構比較
 <!-- 總結你的專題與進階程式設計及資料結構課程之間的關聯 -->
-一、資料結構(Data Structure)的應用
 
-本專題中主要使用了以下資料結構：
+一、搜尋演算法比較
 
-1. vector<Event>
-vector<Event> events;
-用途
+本專題實作了三種搜尋方式：
 
-用來儲存所有事件資料。
+Linear Search（線性搜尋）
+Binary Search（二元搜尋）
+Map Search（映射搜尋）
+(1) Linear Search 與 Binary Search 比較
+Linear Search
 
-特性
-動態陣列(dynamic array)
-支援快速尾端新增
-可搭配排序與搜尋演算法
-優點
-存取速度快（O(1) random access）
-適合排序
-缺點
-中間刪除元素成本高
-搜尋效率較低（若未排序）
-2. map<int, Event>
-map<int, Event> eventMap;
-用途
+原理：
 
-利用 ID 快速搜尋事件。
+從第一筆資料開始逐筆比較。
 
-特性
-底層通常為 Red-Black Tree（紅黑樹）
-自動排序 key
-優點
-搜尋效率高
-插入與刪除穩定
-缺點
-記憶體消耗較大
-不適合大量 sequential traversal
-3. set<int>
-set<int> reminded;
-用途
-
-避免提醒視窗重複跳出。
-
-特性
-元素不可重複
-自動排序
-優點
-快速判斷元素是否存在
-適合去重(de-duplication)
-缺點
-不保留插入順序
-空間成本較高
-二、演算法(Algorithm)的應用
-
-本專題中實作了多種搜尋與排序演算法，並能比較其效率差異。
-
-三、搜尋演算法比較
-1. Linear Search（線性搜尋）
 for (const auto& e : events)
-原理
-
-從頭逐一比對資料。
-
-時間複雜度
-O(n)
-優點
-簡單
-不需排序
-缺點
-資料量大時效率差
-2. Binary Search（二元搜尋）
-sort(...)
-
-後：
-
-while (l <= r)
-原理
-
-每次將搜尋範圍縮小一半。
-
-時間複雜度
-O(log n)
-優點
-搜尋效率高
-缺點
-必須先排序
-不適合頻繁新增刪除資料
-3. Map Search
-map<int, Event>
-原理
-
-利用平衡樹結構搜尋 key。
-
-時間複雜度
-O(log n)
-優點
-插入與搜尋都穩定
-不需手動排序
-缺點
-記憶體使用較高
-常數成本較大
-四、搜尋演算法差異比較
-演算法	時間複雜度	是否需排序	適用情境
-Linear Search	O(n)	不需要	小型資料
-Binary Search	O(log n)	需要	大量靜態資料
-Map Search	O(log n)	自動排序	動態資料管理
-五、排序演算法比較
-1. Bubble Sort（氣泡排序）
-for (...) {
-    for (...) {
-        swap(...)
+{
+    if (e.desc == key)
+    {
+        ...
     }
 }
-原理
 
-重複比較相鄰元素。
+時間複雜度：
 
-時間複雜度
-O(n²)
-優點
-容易理解
-適合教學
-缺點
-效率極低
-2. Fast Sort (std::sort)
-sort(...)
-原理
+O(n)
 
-C++ STL 內部通常使用：
+其中 n 為資料筆數。
 
-IntroSort
-QuickSort
-HeapSort
-InsertionSort 混合
-時間複雜度
-O(n log n)
-優點
-極高效率
-工業標準
-缺點
-原理較複雜
-六、排序演算法差異比較
-演算法	時間複雜度	穩定性	適用情境
-Bubble Sort	O(n²)	穩定	小型資料/教學
-Fast Sort	O(n log n)	視實作而定	大型資料
-七、進階程式設計概念
+Binary Search
 
-本專題也涉及多項進階程式設計內容。
+原理：
 
-1. Object-Oriented Programming (OOP)
+先將資料排序，再利用「每次排除一半資料」的方式搜尋。
 
-使用：
+時間複雜度：
 
-class Event
-class Manager
-概念
-封裝(Encapsulation)
-類別(Class)
-物件(Object)
-2. File I/O
-ifstream
-ofstream
-用途
+O(logn)
+比較結果
+項目	Linear Search	Binary Search
+時間複雜度	O(n)	O(log n)
+需不需要排序	不需要	需要
+實作難度	低	中
+資料量小時	差異不大	差異不大
+資料量大時	效率較差	效率較高
+結論
 
-將事件永久保存於：
+當資料量較少時，Linear Search 較容易實作；但當資料量增加時，Binary Search 的效率遠高於 Linear Search，因此較適合大型資料搜尋。
 
-events.txt
-概念
-序列化(serialization)
-資料持久化(persistence)
-3. Multithreading
-thread t(...)
-用途
+二、排序演算法比較
 
-背景執行提醒系統。
+本專題實作：
 
-概念
-平行處理
-非同步執行
-4. Time System
+Bubble Sort
+Fast Sort (std::sort)
+(1) Bubble Sort
 
-使用：
+原理：
 
-time_t
-tm
-mktime()
-localtime_s()
-用途
+重複比較相鄰元素，若順序錯誤則交換。
 
-計算：
+例如：
 
-星期幾
-日期差
-提醒時間
-八、與課程的整體關聯
+5 3 4 1
 
-本專題完整結合了：
+↓
 
-課程內容	專題應用
-資料結構	vector、map、set
-搜尋演算法	Linear Search、Binary Search、Map Search
-排序演算法	Bubble Sort、Fast Sort
-物件導向	Event 與 Manager 類別
-檔案處理	events.txt
-時間複雜度分析	O(n)、O(log n)、O(n²)
-進階程式設計	multithreading、時間系統
-九、總結
+3 5 4 1
 
-本專題透過建立事件管理與行事曆系統，實際整合了資料結構、演算法以及進階程式設計的核心概念。除了實作基本 CRUD 功能外，也進一步比較不同搜尋與排序演算法在效率上的差異，並透過 map、set 等 STL 容器提升資料管理效率。此外，本系統亦結合多執行緒與時間處理功能，使程式具備背景提醒與日期計算能力，提升整體實用性與完整度。透過本次專題，可以更加理解理論課程中的資料結構與演算法如何真正應用於實際軟體開發中。
+↓
+
+3 4 5 1
+
+↓
+
+3 4 1 5
+
+直到完成排序。
+
+時間複雜度：
+
+O(n
+2
+)
+(2) Fast Sort（std::sort）
+
+原理：
+
+C++ STL 的 sort() 採用 IntroSort。
+
+IntroSort 結合：
+
+Quick Sort
+Heap Sort
+Insertion Sort
+
+時間複雜度：
+
+O(nlogn)
+比較結果
+項目	Bubble Sort	Fast Sort
+時間複雜度	O(n²)	O(nlogn)
+執行速度	慢	快
+程式碼難度	簡單	直接呼叫
+適合資料量	小型資料	大型資料
+實際應用	教學用途	工業用途
+結論
+
+Bubble Sort 雖然容易理解，但效率較差；Fast Sort 具有較佳效能，因此本專題在實際排序功能中較適合使用 Fast Sort。
+
+三、資料結構比較
+
+你的專題主要使用：
+
+vector
+map
+
+這也是老師常要求寫的部分。
+
+Vector 與 Map 比較
+Vector
+vector<Event> events;
+
+特性：
+
+連續記憶體儲存
+可利用索引快速存取
+
+存取時間：
+
+O(1)
+
+搜尋時間：
+
+O(n)
+Map
+map<int, Event> eventMap;
+
+特性：
+
+使用紅黑樹(Red-Black Tree)
+自動排序
+
+搜尋時間：
+
+O(logn)
+
+新增時間：
+
+O(logn)
+比較結果
+項目	Vector	Map
+底層結構	動態陣列	紅黑樹
+存取速度	O(1)	O(log n)
+搜尋速度	O(n)	O(log n)
+是否自動排序	否	是
+記憶體使用	較少	較多
+結論
+
+Vector 適合儲存大量資料並進行排序，而 Map 適合依照 ID 快速搜尋資料。因此本專題同時使用兩者，以兼顧資料儲存效率與搜尋效率。
